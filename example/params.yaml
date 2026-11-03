@@ -1,0 +1,13 @@
+# Upstream AREB3 demo. Two GEM runs on the same reads in one go:
+#   AREB3_Col-B_v3        no control      = upstream run_demo_ath_areb3.sh
+#   AREB3_Col-B_v3_beads  beads control   = upstream run_demo_ath_areb3_exercise1.sh
+input: samplesheet.csv
+fasta: reference/TAIR10/genome.fa
+bowtie2_index: reference/TAIR10/bowtie2_index
+keep_chromosomes: "1,2,3,4,5"
+min_mapq: 30
+top_n_peaks: 600
+memechip_db: data/motif_db/motif_databases.12.21/ARABD/ArabidopsisDAPv1.meme
+gtf: reference/TAIR10/genes.gtf      # Ensembl TAIR10.34
+qc_motifs: ACGTGG                   # ABRE core, shown next to MEME-ChIP's top motif in motif QC
+outdir: results/areb3

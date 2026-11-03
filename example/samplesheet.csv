@@ -1,0 +1,4 @@
+sample,fastq_1,fastq_2,control
+AREB3_Col-B_v3,data/fastq/SRR2926843.fastq.gz,,
+AREB3_Col-B_v3_beads,data/fastq/SRR2926843.fastq.gz,,beads_Col-B_v3a
+beads_Col-B_v3a,data/fastq/SRR2926068_1.fastq.gz,,

@@ -1,0 +1,16 @@
+# Allowlist: everything stays out unless named here, so a new file can't be pushed by accident.
+*
+!.gitignore
+!README.md
+!main.nf
+!modules.nf
+!nextflow.config
+!multiqc_config.yaml
+!bin/
+!bin/*.py
+!example/
+!example/*
+!docs/
+!docs/READING_THE_REPORT.md
+!docs/img/
+!docs/img/*.png

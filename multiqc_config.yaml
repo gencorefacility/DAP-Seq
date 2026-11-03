@@ -1,0 +1,60 @@
+# MultiQC settings for the DAP-seq report
+title: DAP-seq
+
+# Sample names come from file names; strip what the pipeline adds so every module agrees on <id>
+extra_fn_clean_exts:
+  - _trimmed                  # Trim Galore's FastQC: <id>_trimmed.fq.gz
+  - type: regex               # paired-end: <id>_val_1.fq.gz -> <id>_1 (matches the Cutadapt rows)
+    pattern: "_val(?=_[12]\\b)"
+  - .bowtie2                  # <id>.bowtie2.log
+  - .peak_qc                  # <id>.peak_qc.tsv
+
+# PEAK_QC: one row per peak-called sample -> General Statistics columns
+custom_data:
+  peak_qc:
+    file_format: tsv
+    plot_type: generalstats
+    headers:
+      peaks:
+        title: Peaks
+        description: Peaks called (GEM events)
+        format: "{:,.0f}"
+        scale: Greens
+      frip:
+        title: FRiP
+        description: "Fraction of reads in peaks: % of the filtered reads (MAPQ + contig filter, duplicates kept) that overlap a peak"
+        suffix: "%"
+        min: 0
+        max: 100
+        scale: Blues
+sp:
+  peak_qc:
+    fn: "*.peak_qc.tsv"
+
+# Report order: results first (motifs, peaks), then the read-level QC that MultiQC's own modules add
+custom_content:
+  order:
+    - memechip_motifs
+    - motif_summary
+    - peak_annotation
+
+# What each of MultiQC's own sections means in this pipeline (shown at the top of the section)
+section_comments:
+  general_stats: >-
+    Three kinds of output, each with its own columns. FASTQ files (paired-end: `<id>_1`, `<id>_2`): reads
+    and trimming. BAM files: alignments, either all of them (`<id>`) or after the MAPQ and contig filter
+    (`<id>.filtered`; paired-end: read 1 only). Peak sets (each experiment, plus each replicate group):
+    peaks, FRiP and GEM's reads. Outputs with the same name share a row, so an experiment's `<id>` row
+    holds its unfiltered BAM and its peak set. Those peaks were called from the filtered reads, but their
+    numbers are on the `<id>` row, not `<id>.filtered`.
+  samtools: >-
+    `<id>` = every read, including unaligned ones; `<id>.filtered` = after the MAPQ and contig filter (--min_mapq,
+    --keep_chromosomes): the reads used for peak calling, FRiP and bigWigs. Paired-end libraries keep
+    read 1 only there (one read per fragment), so their filtered counts are at most half of `<id>`.
+  bowtie2: >-
+    Trimmed reads aligned to the whole genome (Bowtie2 defaults). The MAPQ and contig filter comes after.
+  cutadapt: >-
+    Trim Galore adapter and quality trimming (-q 20). Short reads left after trimming are dropped.
+  fastqc: >-
+    FastQC on the trimmed reads (Trim Galore --fastqc). Duplication here counts identical sequences;
+    GEM's duplicate filter (General Statistics, "GEM dups") works on aligned positions instead.
