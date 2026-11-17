@@ -43,14 +43,15 @@ section_comments:
   general_stats: >-
     Three kinds of output, each with its own columns. FASTQ files (paired-end: `<id>_1`, `<id>_2`): reads
     and trimming. BAM files: alignments, either all of them (`<id>`) or after the MAPQ and contig filter
-    (`<id>.filtered`; paired-end: read 1 only). Peak sets (each experiment, plus each replicate group):
-    peaks, FRiP and GEM's reads. Outputs with the same name share a row, so an experiment's `<id>` row
+    (`<id>.filtered`; paired-end: read 1 of proper pairs whose mates both pass). Peak sets (each
+    experiment, plus each replicate group): peaks, FRiP and GEM's reads. Outputs with the same name share a row, so an experiment's `<id>` row
     holds its unfiltered BAM and its peak set. Those peaks were called from the filtered reads, but their
     numbers are on the `<id>` row, not `<id>.filtered`.
   samtools: >-
     `<id>` = every read, including unaligned ones; `<id>.filtered` = after the MAPQ and contig filter (--min_mapq,
     --keep_chromosomes): the reads used for peak calling, FRiP and bigWigs. Paired-end libraries keep
-    read 1 only there (one read per fragment), so their filtered counts are at most half of `<id>`.
+    only proper pairs whose mates both pass, and only read 1 of each (one read per fragment), so their
+    filtered counts are at most half of `<id>`.
   bowtie2: >-
     Trimmed reads aligned to the whole genome (Bowtie2 defaults). The MAPQ and contig filter comes after.
   cutadapt: >-

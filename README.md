@@ -24,7 +24,7 @@ Two tables from the MultiQC report for the example in `example/`: public *Arabid
 
 - **Trim** adapters and low-quality bases (Trim Galore), with FastQC.
 - **Align** to the genome (Bowtie2). The index is built from the FASTA if you don't provide one.
-- **Filter** by mapping quality and, optionally, chromosome (samtools). Paired-end libraries keep read 1 only after filtering, because GEM would otherwise count each fragment twice.
+- **Filter** by mapping quality and, optionally, chromosome (samtools). Paired-end libraries keep only proper pairs in which both mates pass, then read 1 of each pair, because GEM would otherwise count each fragment twice.
 - **Call peaks** per sample and, for replicate groups, once more on the pooled replicates (GEM).
 - **Find motifs** in the top peaks (MEME-ChIP).
 - **Check motifs** across all peaks against a shuffled background (FIMO).

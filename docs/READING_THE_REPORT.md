@@ -24,7 +24,7 @@ MultiQC merges everything that shares a name into one row, so one row can hold m
 | `TF1_Lib_rep1_1` and `_2` | **Read 1 and read 2 FASTQ files**, after trimming. | Trimmed bases, Dups, GC, Seqs |
 | `Ctrl_Lib_rep1` and its variants | **Control library:** the same rows as a replicate, but no peak columns, because controls aren't peak-called. | samtools, % Aligned, FASTQ columns |
 
-The filters are mapping quality of at least 30 (the default), the chromosomes chosen for the run, and, for paired-end libraries, read 1 only.
+The filters are mapping quality of at least 30 (the default), the chromosomes chosen for the run, and, for paired-end libraries, proper pairs in which both mates pass, of which only read 1 is kept.
 
 Some reports look slightly different:
 - **Single-end libraries** have no `_1` and `_2` rows. Their trimming and FastQC numbers sit in the `TF1_Lib_rep1` row.
@@ -38,10 +38,10 @@ In a replicate's row, the samtools columns count both mates with no filtering, w
 |---|---|---|
 | Read 1 and read 2 after trimming | `_1` and `_2` rows, **Seqs** | 2.0M each |
 | All alignment records, both mates | `TF1_Lib_rep1`, **Total seqs** | 4.0M |
-| After the filters, read 1 only | `TF1_Lib_rep1.filtered`, **Total seqs** | 1.4M |
+| After the filters, read 1 of each passing pair | `TF1_Lib_rep1.filtered`, **Total seqs** | 1.4M |
 | After GEM's duplicate filter | `TF1_Lib_rep1`, **GEM reads** | 1.2M |
 
-The filtered count is below half of Total seqs because it keeps one read per DNA fragment and also drops fragments that fail the other filters. GEM has no paired-end mode and would otherwise count each fragment twice.
+The filtered count is below half of Total seqs because it keeps one read per DNA fragment and also drops fragments that fail the other filters, including pairs where one mate didn't align or the mates didn't align as a proper pair. GEM has no paired-end mode and would otherwise count each fragment twice.
 
 ### What the columns mean
 

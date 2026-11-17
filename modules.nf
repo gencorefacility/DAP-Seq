@@ -161,16 +161,24 @@ process SORT_FILTER_BAM {
     // no keep_chromosomes = keep every contig.
     // -F 4 drops unmapped reads explicitly: -q only removes them because they have MAPQ 0, so with
     // --min_mapq 0 they'd reach GEM, FRiP and the bigWigs. A no-op at upstream's 30.
-    // Paired-end: the filtered BAM keeps read 1 only (-f 64), one record per DNA fragment. GEM has no
-    // paired-end mode and would count both mates, i.e. every fragment twice. The pairing still does its
-    // job before this: bowtie2 gives both mates of a concordant pair the pair's MAPQ, so -q filters
-    // fragments, and read 1's record keeps the mate's position and TLEN (the fragment for bigWigs).
-    def flags   = meta.single_end ? '-F 4' : '-F 4 -f 64'
+    // Paired-end: both mates of a fragment must pass (issue #1). Keep proper pairs (-f 2), drop unmapped,
+    // mate-unmapped, secondary, QC-fail and duplicate records (-F 1804), MAPQ per record (-q). fixmate -r
+    // then marks a record whose mate was dropped as mate-unmapped, and the second view removes it. The
+    // filtered BAM keeps read 1 of each pair (-f 64), one record per DNA fragment: GEM has no paired-end
+    // mode and would count both mates, i.e. every fragment twice. Read 1's record keeps the mate's
+    // position and TLEN (the fragment for bigWigs).
     def regions = opts.keep.join(' ')
     """
     samtools view -bSu ${sam} | samtools sort -@ ${task.cpus} -o ${meta.id}.bam -
     samtools index ${meta.id}.bam
-    samtools view -u ${flags} -q ${opts.min_mapq} ${meta.id}.bam ${regions} | samtools sort -@ ${task.cpus} -o ${meta.id}.filtered.bam -
+    if ${meta.single_end}; then
+        samtools view -u -F 4 -q ${opts.min_mapq} ${meta.id}.bam ${regions} | samtools sort -@ ${task.cpus} -o ${meta.id}.filtered.bam -
+    else
+        samtools view -u -F 1804 -f 2 -q ${opts.min_mapq} ${meta.id}.bam ${regions} | samtools sort -n -@ ${task.cpus} -o pairs.bam -
+        samtools fixmate -r pairs.bam pairs.fixmate.bam
+        samtools view -u -F 1804 -f 2 pairs.fixmate.bam | samtools sort -@ ${task.cpus} -o pairs.filtered.bam -
+        samtools view -b -f 64 -F 4 pairs.filtered.bam -o ${meta.id}.filtered.bam
+    fi
     samtools index ${meta.id}.filtered.bam
     for b in ${meta.id} ${meta.id}.filtered; do
         samtools stats \$b.bam > \$b.stats
