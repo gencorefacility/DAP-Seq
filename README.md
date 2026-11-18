@@ -25,7 +25,7 @@ Two tables from the MultiQC report for the example in `example/`: public *Arabid
 - **Trim** adapters and low-quality bases (Trim Galore), with FastQC.
 - **Align** to the genome (Bowtie2). The index is built from the FASTA if you don't provide one.
 - **Filter** by mapping quality and, optionally, chromosome (samtools). Paired-end libraries keep only proper pairs in which both mates pass, then read 1 of each pair, because GEM would otherwise count each fragment twice.
-- **Call peaks** per sample and, for replicate groups, once more on the pooled replicates (GEM).
+- **Call peaks** per sample and, for replicate groups, once more on the pooled replicates (GEM). GEM runs on one thread, because more threads make its results non-reproducible.
 - **Find motifs** in the top peaks (MEME-ChIP).
 - **Check motifs** across all peaks against a shuffled background (FIMO).
 - **Annotate** peaks to genes (HOMER).
@@ -102,7 +102,6 @@ Ctrl_rep2,Ctrl_rep2_R1.fastq.gz,Ctrl_rep2_R2.fastq.gz,,
 | `memechip_db` | none | Known-motif database for MEME-ChIP, in MEME format |
 | `qc_motifs` | none | Motifs to check in all peaks: IUPAC strings and/or MEME files |
 | `qc_motifs_n_denovo` | `1` | Top MEME-ChIP motifs to add to the motif check |
-| `gem_threads` | `1` | More than 1 is faster, but results are not reproducible: thread timing changes the order of events going into GEM's motif step |
 | `gem_args`, `trim_args`, `bowtie2_args`, `memechip_args`, `bigwig_args` | empty | Extra arguments, passed to the tool as written |
 
 `nextflow.config` lists the rest.
