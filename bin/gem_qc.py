@@ -19,24 +19,24 @@ import re
 COUNT = re.compile(r"(\S+)_(IP|CTRL)\s+Bases:\s*\d+\s+HitCounts:\s*([\d.]+)")
 
 
-def read_counts(path):
-    """{"IP"/"CTRL": (before, after)}, summed over conditions. "after" = the lines following
-    "Filter duplicate reads."; without that line (--nrf) nothing was removed."""
+def read_counts(path, condition):
+    """{"IP"/"CTRL": (before, after)} for one GEM condition; lines of any other condition are
+    ignored. "after" = the lines following "Filter duplicate reads."; without that line (--nrf)
+    nothing was removed."""
     before, after, filtered = {}, {}, False
     with open(path) as fh:
         for line in fh:
             if line.startswith("Filter duplicate reads"):
                 filtered = True
             m = COUNT.match(line)
-            if m:
-                (after if filtered else before)[(m[1], m[2])] = float(m[3])
+            if m and m[1] == condition:
+                (after if filtered else before)[m[2]] = float(m[3])
     if not before:
-        raise SystemExit(f"no read counts ('<cond>_IP  Bases: ...  HitCounts: ...') in {path}")
+        raise SystemExit(f"no read counts for condition {condition} "
+                         f"('{condition}_IP  Bases: ...  HitCounts: ...') in {path}")
     if not filtered:
         after = before
-    return {kind: (sum(v for (_c, k), v in before.items() if k == kind),
-                   sum(v for (_c, k), v in after.items() if k == kind))
-            for kind in sorted({k for _c, k in before})}
+    return {kind: (before[kind], after[kind]) for kind in sorted(before)}
 
 
 def main():
@@ -45,7 +45,9 @@ def main():
     ap.add_argument("--dir", required=True, help="GEM's output dir (<sample>/)")
     args = ap.parse_args()
 
-    counts = read_counts(os.path.join(args.dir, f"{args.sample}.GEM_log.txt"))
+    # The GEM process names the condition after the peak set (--expt<id>), so it is --sample
+    log = os.path.join(args.dir, f"{args.sample}.GEM_log.txt")
+    counts = read_counts(log, args.sample)
     stats = {}
     for kind, key in (("IP", "gem"), ("CTRL", "gem_ctrl")):
         if kind in counts:
