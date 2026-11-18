@@ -206,7 +206,7 @@ process GEM {
     tuple val(meta), path(bams), path(bais), path(ctrl_bams), path(ctrl_bais)   // lists; ctrl may be empty
     path sizes
     path chr_dir
-    val opts      // jar, read_dist, k_min, k_max, k_seqs, threads, keep, args
+    val opts      // jar, read_dist, k_min, k_max, k_seqs, keep, args
 
     output:
     tuple val(meta), path("${meta.id}/${meta.id}.GEM_events.narrowPeak"), emit: peaks
@@ -217,8 +217,7 @@ process GEM {
     // filter) are only printed there, and GEM_QC reads them.
     // --expt<COND>/--ctrl<COND> must share the same condition suffix for GEM to pair them; repeating
     // either flag adds replicates to that condition (GEM pools repeated --ctrl too: verified 2026-10-22).
-    // --t uses opts.threads (not task.cpus) so changing it invalidates -resume's cache;
-    // >1 thread makes GEM non-deterministic.
+    // --t 1: GEM is single-threaded because more threads make its results non-reproducible (issue #2).
     def expt = [bams].flatten().collect { b -> "--expt${meta.id} ${b}" }.join(' ')
     def ctrl = [ctrl_bams].flatten().collect { b -> "--ctrl${meta.id} ${b}" }.join(' ')
     def subs = opts.keep ? "--subs \"${opts.keep.join(' ')}\"" : ''
@@ -234,7 +233,7 @@ process GEM {
         ${ctrl} \\
         --f SAM \\
         --out ${meta.id} \\
-        --t ${opts.threads} \\
+        --t 1 \\
         --k_min ${opts.k_min} --k_max ${opts.k_max} --k_seqs ${opts.k_seqs} \\
         ${subs} \\
         --outNP --outBED --outMEME --outJASPAR --outHOMER \\

@@ -60,7 +60,7 @@ workflow {
 
     GEM(gem_in, PREP_GENOME.out.sizes, PREP_GENOME.out.chr_dir,
         [jar: params.gem_jar, read_dist: params.gem_read_dist, k_min: params.gem_k_min,
-         k_max: params.gem_k_max, k_seqs: params.gem_k_seqs, threads: params.gem_threads,
+         k_max: params.gem_k_max, k_seqs: params.gem_k_seqs,
          keep: keep, args: params.gem_args])
 
     // Peaks -> motifs
